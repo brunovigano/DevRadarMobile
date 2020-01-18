@@ -7,8 +7,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import api from '../services/api';
 
 function Main({ navigation }) {
-  const [devs, setDevs] = useState(null);
+  const [devs, setDevs] = useState([]);
   const [currentRegion, setCurrentRegion] = useState(null);
+  const [techs, setTechs] = useState('');
 
   useEffect(() => {
     async function loadInitialPosition() {
@@ -36,12 +37,11 @@ function Main({ navigation }) {
   async function loadDevs() {
     const { latitude, longitude } = currentRegion;
 
-    const response = await api.get('/posts');
-    console.log('foi');
+    const response = await api.get('/search', {
+      params: { lat: latitude, lon: longitude, techs },
+    });
 
-    console.log(response.data);
-
-    // setDevs(response.data.devs);
+    setDevs(response.data.searchResult);
   }
 
   function handleRegionChanged(region) {
@@ -51,6 +51,7 @@ function Main({ navigation }) {
   if (!currentRegion) {
     return null;
   }
+
   return (
     <>
       <MapView
@@ -58,7 +59,8 @@ function Main({ navigation }) {
         initialRegion={currentRegion}
         style={styles.map}
       >
-        {/* {devs.map(dev => (
+        {devs.map(dev => (
+          // { console.log(dev) }
           <Marker
             key={dev._id}
             coordinate={{
@@ -87,7 +89,7 @@ function Main({ navigation }) {
               </View>
             </Callout>
           </Marker>
-        ))} */}
+        ))}
       </MapView>
 
       <View style={styles.searchForm}>
@@ -97,6 +99,8 @@ function Main({ navigation }) {
           placeholderTextColor='#999'
           autoCapitalize='words'
           autoCorrect={false}
+          value={techs}
+          onChangeText={setTechs}
         />
 
         <TouchableOpacity onPress={loadDevs} style={styles.loadButton}>
